@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:saree3_app/screens/agent/recharge_request_screen.dart';
+import 'package:saree3_app/screens/agent/request_status_screen.dart';
+import 'package:saree3_app/screens/agent/add_driver_balance_screen.dart';
+import 'package:saree3_app/screens/agent/agent_dashboard_screen.dart';
 import '../../../core/constants/app_colors.dart';
 import 'generate_codes_screen.dart';
 import 'sell_package_screen.dart';
@@ -184,6 +188,30 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildQuickAction(
+                    icon: Icons.delivery_dining,
+                    label: 'شحن سائق',
+                    color: AppColors.primary,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const AddDriverBalanceScreen()),
+                      );
+                    },
+                  ),
+                  _buildQuickAction(
+                    icon: Icons.dashboard,
+                    label: 'لوحة التحكم',
+                    color: AppColors.secondary,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const AgentDashboardScreen()),
+                      );
+                    },
+                  ),
+                  _buildQuickAction(
                     icon: Icons.qr_code,
                     label: 'إنشاء كود',
                     color: AppColors.primary,
@@ -192,6 +220,12 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
                       setState(() => _currentIndex = 1);
                     },
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
                   _buildQuickAction(
                     icon: Icons.sell,
                     label: 'بيع باقة',
@@ -202,12 +236,24 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
                     },
                   ),
                   _buildQuickAction(
+                    icon: Icons.history,
+                    label: 'طلباتي',
+                    color: AppColors.info,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RequestStatusScreen()),
+                      );
+                    },
+                  ),
+                  _buildQuickAction(
                     icon: Icons.attach_money,
-                    label: 'سحب عمولة',
+                    label: 'عمولاتي',
                     color: AppColors.warning,
                     onTap: () {
                       Navigator.pop(context);
-                      _showWithdrawDialog();
+                      setState(() => _currentIndex = 3);
                     },
                   ),
                 ],
@@ -511,19 +557,57 @@ class AgentDashboardContent extends StatelessWidget {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
+        // الصف الأول
         Row(
           children: [
             Expanded(
               child: _buildActionCard(
                 context: context,
-                icon: Icons.qr_code,
-                title: 'إنشاء كود',
-                subtitle: 'كود تفعيل جديد',
+                icon: Icons.delivery_dining,
+                title: 'شحن سائق',
+                subtitle: 'شحن رصيد سائق',
                 color: AppColors.primary,
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const GenerateCodesScreen()),
+                    MaterialPageRoute(builder: (_) => const AddDriverBalanceScreen()),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionCard(
+                context: context,
+                icon: Icons.dashboard,
+                title: 'لوحة التحكم',
+                subtitle: 'عرض الأرباح والإحصائيات',
+                color: AppColors.secondary,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AgentDashboardScreen()),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // الصف الثاني
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                context: context,
+                icon: Icons.account_balance_wallet,
+                title: 'شحن رصيدي',
+                subtitle: 'طلب شحن رصيد الوكيل',
+                color: AppColors.primary,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RechargeRequestScreen()),
                   );
                 },
               ),
@@ -547,15 +631,53 @@ class AgentDashboardContent extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
+        // الصف الثالث
         Row(
           children: [
             Expanded(
               child: _buildActionCard(
                 context: context,
                 icon: Icons.history,
+                title: 'طلباتي',
+                subtitle: 'تتبع طلبات الشحن',
+                color: AppColors.info,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RequestStatusScreen()),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionCard(
+                context: context,
+                icon: Icons.attach_money,
+                title: 'عمولاتي',
+                subtitle: 'تفاصيل الأرباح',
+                color: AppColors.warning,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CommissionsScreen()),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // الصف الرابع
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                context: context,
+                icon: Icons.history_edu,
                 title: 'سجل المبيعات',
                 subtitle: 'عرض جميع المبيعات',
-                color: AppColors.warning,
+                color: AppColors.tertiaryContainer,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -568,14 +690,14 @@ class AgentDashboardContent extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 context: context,
-                icon: Icons.attach_money,
-                title: 'عمولاتي',
-                subtitle: 'تفاصيل الأرباح',
-                color: AppColors.secondary,
+                icon: Icons.qr_code,
+                title: 'أكوادي',
+                subtitle: 'عرض الأكواد المنشأة',
+                color: AppColors.primary,
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CommissionsScreen()),
+                    MaterialPageRoute(builder: (_) => const GenerateCodesScreen()),
                   );
                 },
               ),
@@ -689,7 +811,10 @@ class AgentDashboardContent extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () {
-                    // الانتقال إلى صفحة الأكواد
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const GenerateCodesScreen()),
+                    );
                   },
                   child: const Text('عرض الكل'),
                 ),

@@ -42,6 +42,11 @@ class UserModel {
   final String? idCardImageUrl;     // صورة الهوية
   final String? bikeImageUrl;       // صورة الدراجة
 
+// === بيانات الوكيل المحلي ===
+  final double agentBalance;        // ✅ رصيد الوكيل الحالي (من الإدارة)
+  final double agentTotalEarnings;  // ✅ إجمالي أرباح الوكيل (العمولات)
+  final int agentTotalTransactions; //
+
   // === الرصيد والطلبات (للعملاء وأصحاب المتاجر والسائقين) ===
   final int prepaidOrdersBalance;   // عدد الطلبات المدفوعة مسبقاً (لأصحاب المتاجر والعملاء)
   final int totalPrepaidOrders;     // إجمالي الطلبات التي دفعها مسبقاً (للتاريخ)
@@ -55,6 +60,7 @@ class UserModel {
   final String? agentCode;          // كود الوكيل (للدخول)
   final double collectedCommission; // العمولة التي جمعها (للوكلاء)
   final List<String> issuedCodes;   // أكواد التفعيل التي أصدرها (للوكلاء)
+  final double balance;             // ✅ رصيد الوكيل الحالي (قابل للسحب أو الشراء)
 
   // === بيانات عامة ===
   final String? profileImage;
@@ -81,10 +87,14 @@ class UserModel {
     this.agentCode,
     this.collectedCommission = 0.0,
     this.issuedCodes = const [],
+    this.balance = 0.0,  // ✅ القيمة الافتراضية 0
     this.profileImage,
     this.isActive = false,
     required this.createdAt,
     required this.updatedAt,
+    this.agentBalance = 0.0,
+    this.agentTotalEarnings = 0.0,
+    this.agentTotalTransactions = 0,
   });
 
   /// هل المستخدم مفعل ويمكنه استخدام التطبيق؟
@@ -159,13 +169,38 @@ class UserModel {
     );
   }
 
-  /// إضافة عمولة للوكيل
+  /// إضافة عمولة للوكيل (من بيع الباقات)
   UserModel addCommission(double amount) {
     if (role != UserRole.agent) return this;
     return copyWith(
       collectedCommission: collectedCommission + amount,
       updatedAt: DateTime.now(),
     );
+  }
+
+  /// ✅ إضافة رصيد للوكيل (عند قبول طلب شحن)
+  UserModel addBalance(double amount) {
+    if (role != UserRole.agent) return this;
+    return copyWith(
+      balance: balance + amount,
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  /// ✅ خصم من رصيد الوكيل (عند السحب أو الشراء)
+  UserModel deductBalance(double amount) {
+    if (role != UserRole.agent) return this;
+    if (balance < amount) return this;
+    return copyWith(
+      balance: balance - amount,
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  /// ✅ هل يمكن للوكيل سحب هذا المبلغ؟
+  bool canWithdraw(double amount) {
+    if (role != UserRole.agent) return false;
+    return balance >= amount;
   }
 
   /// إضافة كود تفعيل أصدره الوكيل
@@ -199,10 +234,14 @@ class UserModel {
       agentCode: json['agentCode'],
       collectedCommission: (json['collectedCommission'] ?? 0.0).toDouble(),
       issuedCodes: List<String>.from(json['issuedCodes'] ?? []),
+      balance: (json['balance'] ?? 0.0).toDouble(),  // ✅ إضافة balance
       profileImage: json['profileImage'],
       isActive: json['isActive'] ?? false,
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      agentBalance: (json['agentBalance'] ?? 0).toDouble(),
+      agentTotalEarnings: (json['agentTotalEarnings'] ?? 0).toDouble(),
+      agentTotalTransactions: json['agentTotalTransactions'] ?? 0,
     );
   }
 
@@ -226,10 +265,14 @@ class UserModel {
       'agentCode': agentCode,
       'collectedCommission': collectedCommission,
       'issuedCodes': issuedCodes,
+      'balance': balance,  // ✅ إضافة balance
       'profileImage': profileImage,
       'isActive': isActive,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'agentBalance': agentBalance,
+      'agentTotalEarnings': agentTotalEarnings,
+      'agentTotalTransactions': agentTotalTransactions,
     };
   }
 
@@ -252,6 +295,7 @@ class UserModel {
     String? agentCode,
     double? collectedCommission,
     List<String>? issuedCodes,
+    double? balance,  // ✅ إضافة balance
     String? profileImage,
     bool? isActive,
     DateTime? createdAt,
@@ -276,6 +320,7 @@ class UserModel {
       agentCode: agentCode ?? this.agentCode,
       collectedCommission: collectedCommission ?? this.collectedCommission,
       issuedCodes: issuedCodes ?? this.issuedCodes,
+      balance: balance ?? this.balance,  // ✅ إضافة balance
       profileImage: profileImage ?? this.profileImage,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
